@@ -1,0 +1,83 @@
+from flask import Flask, render_template, request
+
+app = Flask(_name_)
+
+@app.route("/", methods=["GET", "POST"])
+def index():
+    total_per_hari = total_per_minggu = total_per_tahun = None
+    tips = []
+
+    if request.method == "POST":
+        try:
+            plastik = int(request.form.get("plastik", 0))
+            makanan = int(request.form.get("makanan", 0))
+            kertas = int(request.form.get("kertas", 0))
+
+            # Estimasi berat per item (dalam gram)
+            berat_plastik = plastik * 20
+            berat_makanan = makanan * 100
+            berat_kertas = kertas * 5
+
+            total_per_hari = berat_plastik + berat_makanan + berat_kertas
+            total_per_minggu = total_per_hari * 7
+            total_per_tahun = total_per_hari * 365
+
+            # Tips berdasarkan input
+            if plastik > 2:
+                tips.append("Kurangi botol plastik dengan membawa tumbler.")
+            if makanan > 2:
+                tips.append("Cobalah menghabiskan makanan agar tidak banyak terbuang.")
+            if kertas > 5:
+                tips.append("Gunakan kertas digital atau dua sisi saat mencetak.")
+
+        except ValueError:
+            pass
+
+    return render_template(
+        "index.html",
+        total_per_hari=total_per_hari,
+        total_per_minggu=total_per_minggu,
+        total_per_tahun=total_per_tahun,
+        tips=tips
+    )
+
+if _name_ == "_main_":
+    app.run(debug=True)
+🔹 templates/index.html
+html
+Copy code
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Kalkulator Sampah Harian</title>
+</head>
+<body>
+    <h1>Kalkulator Sampah Harian</h1>
+    <form method="POST">
+        <label>Botol plastik per hari:</label><br>
+        <input type="number" name="plastik" min="0" required><br><br>
+
+        <label>Sisa makanan per hari:</label><br>
+        <input type="number" name="makanan" min="0" required><br><br>
+
+        <label>Lembar kertas dibuang per hari:</label><br>
+        <input type="number" name="kertas" min="0" required><br><br>
+
+        <button type="submit">Hitung</button>
+    </form>
+
+    {% if total_per_hari is not none %}
+        <h2>Hasil Perkiraan Sampah:</h2>
+        <p><strong>{{ total_per_hari }}</strong> gram per hari</p>
+        <p><strong>{{ total_per_minggu }}</strong> gram per minggu</p>
+        <p><strong>{{ total_per_tahun / 1000 | round(2) }}</strong> kg per tahun</p>
+
+        <h3>Tips Pengurangan Limbah:</h3>
+        <ul>
+            {% for tip in tips %}
+                <li>{{ tip }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</body>
+</html>
